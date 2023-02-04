@@ -1,6 +1,10 @@
-use actix_web::{get, Responder};
+use actix_web::{get, post, web, Responder};
 
-#[get("/ping")]
-pub async fn ping() -> impl Responder {
-    "pong"
+use super::req::*;
+use super::resp::*;
+
+#[post("/channel")]
+pub async fn create_channel(request: web::Json<CreateChannelReq>) -> impl Responder {
+    info!("Creating channel with remote {}", request.remote.as_str());
+    web::Json(CreateChannelResp::Initiated)
 }
