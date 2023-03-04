@@ -1,8 +1,9 @@
 use actix_web::{get, post, web, Responder};
 
+use crate::feed;
+use crate::state::{State, UrlState};
 use super::req::*;
 use super::resp::*;
-use super::{State, UrlState};
 
 #[post("/channel")]
 pub async fn create_channel(data: web::Data<State>, request: web::Json<CreateChannelReq>) -> impl Responder {
@@ -15,8 +16,21 @@ pub async fn create_channel(data: web::Data<State>, request: web::Json<CreateCha
             tokio::spawn(async move {
                 let url_map = data.url_map.clone();
                 info!("Adding {} ...", &request.remote);
-                tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-                let result_state = UrlState::Success { slug: "placeholder".to_string() };
+                let channel = feed::channel_from_url(request.remote.clone()).await;
+                let result_state = match channel {
+                    Ok(c) => {
+                        let slug = c
+                            .title()
+                            .to_lowercase()
+                            .chars()
+                            .filter(|c| c.is_ascii_alphanumeric())
+                            .collect::<String>();
+                        UrlState::Success { slug }
+                    },
+                    Err(e) => {
+                        UrlState::Failure { error: e.to_string() }
+                    },
+                };
                 url_map.lock().await.insert(request.remote.clone(), result_state);
             });
             web::Json(CreateChannelResp::Initiated)

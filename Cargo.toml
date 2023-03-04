@@ -11,6 +11,7 @@ chrono = "0.4.23"
 clap = "4.1.4"
 diesel = { version = "2.0.3", features = ["postgres", "chrono"] }
 diesel-async = { version = "0.2.0", features = ["mobc", "postgres"] }
+dotenvy = "0.15.6"
 log = "0.4.17"
 pretty_env_logger = "0.4.0"
 reqwest = "0.11.14"
